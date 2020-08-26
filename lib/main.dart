@@ -120,7 +120,7 @@ class _AppState extends State<App> {
                         //This Stream is triggered from custom_appbar.dart
 
                         stream: bloc.recieveColorName,
-                        initialData: 'Yellow',
+                        initialData: 'Blue',
                         builder: (context, snapshot) {
                           return MaterialApp(
                               title: 'CourseMate',

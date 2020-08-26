@@ -39,7 +39,7 @@ var connectivityStatus = 'Unknown';
           ),
         ),
       body: PageView(
-        physics: ClampingScrollPhysics(),
+        physics: NeverScrollableScrollPhysics(),
         controller: _pageController,
         onPageChanged: onPageChanged,
         children: <Widget>[
