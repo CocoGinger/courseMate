@@ -39,18 +39,15 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-        child: Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: PageView(
-          physics: BouncingScrollPhysics(),
-          controller: _pageController,
-          onPageChanged: onPageChanged,
-          children: [Posts(), ImagePicker()],
-        ),
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: PageView(
+        physics: BouncingScrollPhysics(),
+        controller: _pageController,
+        onPageChanged: onPageChanged,
+        children: [Posts(), ImagePicker()],
       ),
-    ));
+    );
   }
 }
 
