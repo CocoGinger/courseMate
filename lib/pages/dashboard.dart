@@ -416,7 +416,7 @@ class _DashBoardState extends State<DashBoard> {
         ),
       ],
     );
-    ;
+    
   }
 
   Widget _buildTile(Widget child, {Function() onTap}) {

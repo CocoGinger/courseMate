@@ -1,18 +1,18 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:CourseMate/models/file.dart';
+import 'package:CourseMate/widgets/player_widget.dart';
 import 'package:audioplayers/audio_cache.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:storage_path/storage_path.dart';
 
-const title = TextStyle(
-    color: Colors.white,
-    fontSize: 36,
-    letterSpacing: 13.0,
-    fontWeight: FontWeight.w600);
+enum PlayerState { stopped, playing, paused }
+enum PlayingRouteState { speakers, earpiece }
+
+const title =
+    TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600);
 
 class AudioComponent extends StatefulWidget {
   @override
@@ -23,21 +23,36 @@ class _AudioComponentState extends State<AudioComponent> {
   List<FileModel> files;
   FileModel selectedModel;
   var audio;
-  AudioPlayer player;
-  AudioCache cache;
-  bool initialPlay = true;
-  bool playing;
+  AudioPlayer _audioPlayer;
+  AudioPlayerState _audioPlayerState;
+  Duration _duration;
+  Duration _position;
 
+  PlayerState _playerState = PlayerState.stopped;
+  PlayingRouteState _playingRouteState = PlayingRouteState.speakers;
+  StreamSubscription _durationSubscription;
+  StreamSubscription _positionSubscription;
+  StreamSubscription _playerCompleteSubscription;
+  StreamSubscription _playerErrorSubscription;
+  StreamSubscription _playerStateSubscription;
+
+  get _isPlaying => _playerState == PlayerState.playing;
+  get _isPaused => _playerState == PlayerState.paused;
+  get _durationText => _duration?.toString()?.split('.')?.first ?? '';
+  get _positionText => _position?.toString()?.split('.')?.first ?? '';
+
+  get _isPlayingThroughEarpiece =>
+      _playingRouteState == PlayingRouteState.earpiece;
+
+  @override
   @override
   void initState() {
     super.initState();
-    player = new AudioPlayer();
-    cache = new AudioCache(fixedPlayer: player);
-
-    getAudiosPath();
+    _initAudioPlayer();
+    getAllAudio();
   }
 
-  getAudiosPath() async {
+  Future getAudiosPath() async {
     var audioPath = await StoragePath.audioPath;
     var audios = jsonDecode(audioPath) as List;
     files = audios.map<FileModel>((e) {
@@ -49,34 +64,37 @@ class _AudioComponentState extends State<AudioComponent> {
         selectedModel = files[0];
         audio = files[0].files[0];
       });
+    return files;
+  }
+
+  Stream getAllAudio() {
+    return Stream.fromFuture(getAudiosPath());
   }
 
   @override
-  dispose() {
+  void dispose() {
+    _audioPlayer.dispose();
+    _durationSubscription?.cancel();
+    _positionSubscription?.cancel();
+    _playerCompleteSubscription?.cancel();
+    _playerErrorSubscription?.cancel();
+    _playerStateSubscription?.cancel();
     super.dispose();
-    player.stop();
   }
 
-  playPause(sound) {
-    if (initialPlay) {
-      cache.play(sound);
-      playing = true;
-      initialPlay = false;
-    }
+  playPause() {
     return IconButton(
       color: Colors.white70,
       iconSize: 80.0,
-      icon: playing
+      icon: _isPlaying
           ? Icon(Icons.pause_circle_filled)
           : Icon(Icons.play_circle_filled),
       onPressed: () {
         setState(() {
-          if (playing) {
-            playing = false;
-            player.pause();
+          if (_isPlaying) {
+            _pause();
           } else {
-            playing = true;
-            player.resume();
+            _play();
           }
         });
       },
@@ -85,8 +103,6 @@ class _AudioComponentState extends State<AudioComponent> {
 
   @override
   Widget build(BuildContext context) {
-    String audioName = audio['displayName'].toString().split('.')[0];
-    String audioPath = audio['path'].toString();
     return Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(children: <Widget>[
@@ -121,41 +137,86 @@ class _AudioComponentState extends State<AudioComponent> {
           ),
           Divider(),
           audio != null
-              ? Center(
-                  child: Column(children: [
-                    Text(audioName.toUpperCase(), style: title),
-                    playPause(audioPath)
-                  ]),
+              ? Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [playPause()],
+                    ),
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.all(12.0),
+                          child: Stack(
+                            children: [
+                              Slider(
+                                onChanged: (v) {
+                                  final Position = v * _duration.inMilliseconds;
+                                  _audioPlayer.seek(
+                                      Duration(milliseconds: Position.round()));
+                                },
+                                value: (_position != null &&
+                                        _duration != null &&
+                                        _position.inMilliseconds > 0 &&
+                                        _position.inMilliseconds <
+                                            _duration.inMilliseconds)
+                                    ? _position.inMilliseconds /
+                                        _duration.inMilliseconds
+                                    : 0.0,
+                              ),
+                            ],
+                          ),
+                        ),
+                        Text(
+                          _position != null
+                              ? '${_positionText ?? ''} / ${_durationText ?? ''}'
+                              : _duration != null ? _durationText : '',
+                          style: TextStyle(fontSize: 24.0),
+                        ),
+                      ],
+                    ),
+                    Text(audio['displayName'].toString()?.split('.')?.first ??
+                        "")
+                  ],
                 )
               : Container(),
+          SizedBox(height: 10),
+          Divider(),
           files != null
               ? selectedModel == null && selectedModel.files.length < 1
                   ? Container()
                   : Flexible(
-                      child: Container(
-                        height: MediaQuery.of(context).size.height * 0.38,
-                        child: GridView.builder(
-                            gridDelegate:
-                                SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: 4,
-                                    crossAxisSpacing: 4,
-                                    mainAxisSpacing: 4),
-                            itemBuilder: (_, i) {
-                              var file = selectedModel.files[i];
-                              print(file.toString());
-                              return GestureDetector(
-                                child: Container(
-                                    child: Text("${file['displayName']}")),
-                                onTap: () {
-                                  setState(() {
-                                    audio = file;
-                                  });
-                                },
-                              );
-                            },
-                            itemCount: selectedModel.files.length),
-                      ),
-                    )
+                      child: GridView.builder(
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 3,
+                                  crossAxisSpacing: 3,
+                                  mainAxisSpacing: 3),
+                          itemBuilder: (_, i) {
+                            var file = selectedModel.files[i];
+
+                            return GestureDetector(
+                              child: Stack(children: [
+                                Text(
+                                  file['displayName']
+                                          .toString()
+                                          ?.split('.')
+                                          ?.first ??
+                                      "",
+                                  overflow: TextOverflow.fade,
+                                ),
+                              ]),
+                              onTap: () {
+                                setState(() {
+                                  audio = file;
+                                  _stop().then((value) => _play());
+                                });
+                              },
+                            );
+                          },
+                          itemCount: selectedModel.files.length))
               : SizedBox()
         ]));
   }
@@ -175,50 +236,115 @@ class _AudioComponentState extends State<AudioComponent> {
             []
         : empty;
   }
-}
 
-class Background extends StatefulWidget {
-  final String sound;
-  const Background({Key key, this.sound}) : super(key: key);
-  @override
-  _BackgroundState createState() => _BackgroundState();
-}
+  void _initAudioPlayer() {
+    _audioPlayer = AudioPlayer(mode: PlayerMode.MEDIA_PLAYER);
 
-class _BackgroundState extends State<Background> {
-  Timer timer;
-  bool _visible = false;
+    _durationSubscription = _audioPlayer.onDurationChanged.listen((duration) {
+      setState(() => _duration = duration);
 
-  @override
-  dispose() {
-    timer.cancel();
-    super.dispose();
+      // TODO implemented for iOS, waiting for android impl
+      if (Theme.of(context).platform == TargetPlatform.iOS) {
+        // (Optional) listen for notification updates in the background
+        _audioPlayer.startHeadlessService();
+
+        // set at least title to see the notification bar on ios.
+        _audioPlayer.setNotification(
+            title: 'App Name',
+            artist: 'Artist or blank',
+            albumTitle: 'Name or blank',
+            imageUrl: 'url or blank',
+            forwardSkipInterval: const Duration(seconds: 30), // default is 30s
+            backwardSkipInterval: const Duration(seconds: 30), // default is 30s
+            duration: duration,
+            elapsedTime: Duration(seconds: 0));
+      }
+    });
+
+    _positionSubscription =
+        _audioPlayer.onAudioPositionChanged.listen((p) => setState(() {
+              _position = p;
+            }));
+
+    _playerCompleteSubscription =
+        _audioPlayer.onPlayerCompletion.listen((event) {
+      _onComplete();
+      setState(() {
+        _position = _duration;
+      });
+    });
+
+    _playerErrorSubscription = _audioPlayer.onPlayerError.listen((msg) {
+      print('audioPlayer error : $msg');
+      setState(() {
+        _playerState = PlayerState.stopped;
+        _duration = Duration(seconds: 0);
+        _position = Duration(seconds: 0);
+      });
+    });
+
+    _audioPlayer.onPlayerStateChanged.listen((state) {
+      if (!mounted) return;
+      setState(() {
+        _audioPlayerState = state;
+      });
+    });
+
+    _audioPlayer.onNotificationPlayerStateChanged.listen((state) {
+      if (!mounted) return;
+      setState(() => _audioPlayerState = state);
+    });
+
+    _playingRouteState = PlayingRouteState.speakers;
   }
 
-  swap() {
-    if (mounted) {
+  Future<int> _play() async {
+    final playPosition = (_position != null &&
+            _duration != null &&
+            _position.inMilliseconds > 0 &&
+            _position.inMilliseconds < _duration.inMilliseconds)
+        ? _position
+        : null;
+    final result = await _audioPlayer.play(audio['path'].toString(),
+        position: playPosition);
+    if (result == 1) setState(() => _playerState = PlayerState.playing);
+
+    // default playback rate is 1.0
+    // this should be called after _audioPlayer.play() or _audioPlayer.resume()
+    // this can also be called everytime the user wants to change playback rate in the UI
+    _audioPlayer.setPlaybackRate(playbackRate: 1.0);
+
+    return result;
+  }
+
+  Future<int> _pause() async {
+    final result = await _audioPlayer.pause();
+    if (result == 1) setState(() => _playerState = PlayerState.paused);
+    return result;
+  }
+
+  Future<int> _earpieceOrSpeakersToggle() async {
+    final result = await _audioPlayer.earpieceOrSpeakersToggle();
+    if (result == 1)
+      setState(() => _playingRouteState =
+          _playingRouteState == PlayingRouteState.speakers
+              ? PlayingRouteState.earpiece
+              : PlayingRouteState.speakers);
+    return result;
+  }
+
+  Future<int> _stop() async {
+    final result = await _audioPlayer.stop();
+    if (result == 1) {
       setState(() {
-        _visible = !_visible;
+        _playerState = PlayerState.stopped;
+        _position = Duration();
       });
     }
+    return result;
   }
 
-  @override
-  build(BuildContext context) {
-    timer = Timer(Duration(seconds: 6), swap);
-    return Stack(
-      children: [
-        Image.asset(
-          'assets/images/forest_1.jpg',
-          fit: BoxFit.cover,
-        ),
-        AnimatedOpacity(
-            child: Image.asset(
-              'assets/images/forest_2.jpg',
-              fit: BoxFit.cover,
-            ),
-            duration: Duration(seconds: 2),
-            opacity: _visible ? 1.0 : 0.0)
-      ],
-    );
+  void _onComplete() {
+    setState(() => _playerState = PlayerState.stopped);
   }
 }

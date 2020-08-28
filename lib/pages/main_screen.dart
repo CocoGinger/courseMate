@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:CourseMate/components/custom_appbar.dart';
 import 'package:CourseMate/components/dialog.dart';
 import 'package:CourseMate/pages/dashboard.dart';
 import 'package:CourseMate/pages/home_page.dart';

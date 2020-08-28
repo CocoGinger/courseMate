@@ -1,5 +1,6 @@
 import 'package:CourseMate/auth/constants/app_constants.dart';
 import 'package:CourseMate/models/user.dart';
+import 'package:CourseMate/utils/routes.dart';
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter/widgets.dart';
 
@@ -39,35 +40,40 @@ class AuthState extends ChangeNotifier {
   Future<User> getAccount() async {
     try {
       Response<dynamic> res = await account.get();
-      if (res.statusCode == 200)
+      if (res.statusCode == 200) {
         return User.fromJson(res.data);
-      else
+      } else {
         return null;
+      }
     } catch (e) {
       print(e);
     }
   }
 
-  login(String email, String password) async {
+  logout() async {
     try {
-      var result =
-          await account.createSession(email: email, password: password);
+      Response result = await account.deleteSession(sessionId: 'current');
       print(result);
+    } catch (e) {}
+  }
+
+  Future login(String email, String password) async {
+    try {
+      Response result =
+          await account.createSession(email: email, password: password);
+      return result;
     } catch (e) {
-      print(e);
+      _error = e;
     }
   }
 
-  signUp(String name, String email, String password) async {
+  Future signUp(String name, String email, String password) async {
     try {
       var result =
           await account.create(email: email, password: password, name: name);
-      print(result);
-      return result;
+      if (result.statusCode == 200) login(email, password);
     } catch (e) {
-      print(e);
+      _error = e;
     }
   }
 }
-
-signUp(String name, String email, String password) {}

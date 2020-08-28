@@ -1,9 +1,7 @@
 import 'dart:ui';
 
 import 'package:CourseMate/auth/authstate.dart';
-import 'package:CourseMate/models/card.dart';
 import 'package:CourseMate/pages/settings_page.dart';
-import 'package:CourseMate/utils/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
