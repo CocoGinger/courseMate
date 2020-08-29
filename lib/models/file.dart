@@ -1,11 +1,11 @@
 class FileModel {
-  List<String> files;
+  List<dynamic> files;
   String folder;
 
   FileModel({this.files, this.folder});
 
   FileModel.fromJson(Map<String, dynamic> json) {
-    files = json['files'].cast<String>();
+    files = json['files'];
     folder = json['folderName'];
   }
 }
