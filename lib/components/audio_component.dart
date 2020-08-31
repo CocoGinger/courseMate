@@ -2,8 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:CourseMate/models/file.dart';
-import 'package:CourseMate/widgets/player_widget.dart';
-import 'package:audioplayers/audio_cache.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:storage_path/storage_path.dart';
@@ -24,12 +22,10 @@ class _AudioComponentState extends State<AudioComponent> {
   FileModel selectedModel;
   var audio;
   AudioPlayer _audioPlayer;
-  AudioPlayerState _audioPlayerState;
   Duration _duration;
   Duration _position;
 
   PlayerState _playerState = PlayerState.stopped;
-  PlayingRouteState _playingRouteState = PlayingRouteState.speakers;
   StreamSubscription _durationSubscription;
   StreamSubscription _positionSubscription;
   StreamSubscription _playerCompleteSubscription;
@@ -37,12 +33,10 @@ class _AudioComponentState extends State<AudioComponent> {
   StreamSubscription _playerStateSubscription;
 
   get _isPlaying => _playerState == PlayerState.playing;
-  get _isPaused => _playerState == PlayerState.paused;
   get _durationText => _duration?.toString()?.split('.')?.first ?? '';
   get _positionText => _position?.toString()?.split('.')?.first ?? '';
 
-  get _isPlayingThroughEarpiece =>
-      _playingRouteState == PlayingRouteState.earpiece;
+
 
   @override
   @override
@@ -153,9 +147,9 @@ class _AudioComponentState extends State<AudioComponent> {
                             children: [
                               Slider(
                                 onChanged: (v) {
-                                  final Position = v * _duration.inMilliseconds;
+                                  final position = v * _duration.inMilliseconds;
                                   _audioPlayer.seek(
-                                      Duration(milliseconds: Position.round()));
+                                      Duration(milliseconds: position.round()));
                                 },
                                 value: (_position != null &&
                                         _duration != null &&
@@ -283,19 +277,7 @@ class _AudioComponentState extends State<AudioComponent> {
       });
     });
 
-    _audioPlayer.onPlayerStateChanged.listen((state) {
-      if (!mounted) return;
-      setState(() {
-        _audioPlayerState = state;
-      });
-    });
-
-    _audioPlayer.onNotificationPlayerStateChanged.listen((state) {
-      if (!mounted) return;
-      setState(() => _audioPlayerState = state);
-    });
-
-    _playingRouteState = PlayingRouteState.speakers;
+   
   }
 
   Future<int> _play() async {
@@ -323,15 +305,6 @@ class _AudioComponentState extends State<AudioComponent> {
     return result;
   }
 
-  Future<int> _earpieceOrSpeakersToggle() async {
-    final result = await _audioPlayer.earpieceOrSpeakersToggle();
-    if (result == 1)
-      setState(() => _playingRouteState =
-          _playingRouteState == PlayingRouteState.speakers
-              ? PlayingRouteState.earpiece
-              : PlayingRouteState.speakers);
-    return result;
-  }
 
   Future<int> _stop() async {
     final result = await _audioPlayer.stop();

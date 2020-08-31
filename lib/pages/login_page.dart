@@ -1,11 +1,9 @@
-import 'package:CourseMate/app.dart';
-import 'package:CourseMate/auth/authstate.dart';
+
 import 'package:CourseMate/components/styles.dart';
 import 'package:CourseMate/utils/bubble_painter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:provider/provider.dart';
 
 class LoginPage extends StatefulWidget {
   LoginPage({Key key}) : super(key: key);
@@ -332,21 +330,7 @@ class _LoginPageState extends State<LoginPage>
                       ),
                     ),
                     onPressed: () {
-                      AuthState state =
-                          Provider.of<AuthState>(context, listen: false);
-                      if (loginEmailController.text.isNotEmpty &&
-                          loginPasswordController.text.isNotEmpty)
-                        state
-                            .login(loginEmailController.text,
-                                loginPasswordController.text)
-                            .then((res) {
-                          if (res.statusCode == 200) {
-                            Navigator.pushAndRemoveUntil(
-                                context,
-                                MaterialPageRoute(builder: (_) => App()),
-                                (route) => false);
-                          }
-                        });
+                    
                     }),
               ),
             ],
@@ -649,14 +633,7 @@ class _LoginPageState extends State<LoginPage>
                       ),
                     ),
                     onPressed: () {
-                      AuthState state =
-                          Provider.of<AuthState>(context, listen: false);
-                      state
-                          .signUp(
-                              signupNameController.text,
-                              signupEmailController.text,
-                              signupPasswordController.text)
-                          .then((value) => _onSignUpButtonPress());
+                   
                     }),
               ),
             ],

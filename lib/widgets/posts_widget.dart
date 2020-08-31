@@ -1,4 +1,4 @@
-import 'package:CourseMate/auth/authstate.dart';
+
 import 'package:CourseMate/utils/src/blurhash.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
@@ -7,7 +7,6 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:image/image.dart' as img;
-import 'package:provider/provider.dart';
 
 const duration = Duration(milliseconds: 3000);
 
@@ -34,8 +33,7 @@ class PostWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AuthState>(builder: (context, state, child) {
-      return Container(
+    return  Container(
         decoration: BoxDecoration(
             borderRadius: BorderRadius.only(
                 bottomRight: Radius.circular(10),
@@ -71,7 +69,7 @@ class PostWidget extends StatelessWidget {
               trailing: IconButton(
                 icon: Icon(Icons.more_vert),
                 onPressed: () {
-                  state.logout();
+                 
                 },
               ),
             ),
@@ -142,6 +140,6 @@ class PostWidget extends StatelessWidget {
           ],
         ),
       );
-    });
+    
   }
 }

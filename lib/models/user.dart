@@ -1,28 +1,23 @@
-class UserFields {
-  static const String id = "\$id";
-  static const String name = "name";
-  static const String email = "email";
-}
-
 class User {
-  String id;
-  String name;
-  String email;
+  final String id;
+  final String fullName;
+  final String email;
+  final String userRole;
 
-  User({this.id, this.name, this.email});
+  User({this.id, this.fullName, this.email, this.userRole});
 
-  User.fromJson(Map<String, dynamic> json) {
-    id = json[UserFields.id];
-    name = json[UserFields.name];
-    email = json[UserFields.email];
-  }
+  User.fromData(Map<String, dynamic> data)
+      : id = data['id'],
+        fullName = data['fullName'],
+        email = data['email'],
+        userRole = data['userRole'];
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-
-    data[UserFields.id] = this.id;
-    data[UserFields.name] = this.name;
-    data[UserFields.email] = this.email;
-    return data;
+    return {
+      'id': id,
+      'fullName': fullName,
+      'email': email,
+      'userRole': userRole,
+    };
   }
 }

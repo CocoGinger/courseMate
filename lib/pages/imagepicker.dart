@@ -1,5 +1,6 @@
 import 'package:CourseMate/components/audio_component.dart';
 import 'package:CourseMate/components/image_component.dart';
+import 'package:CourseMate/components/video_component.dart';
 import 'package:flutter/material.dart';
 
 class ImagePicker extends StatefulWidget {
@@ -20,7 +21,7 @@ class _ImagePickerState extends State<ImagePicker> {
     } else if (audio) {
       return AudioComponent();
     } else {
-      return Container(child: Text("Video"));
+      return VideoComponent();
     }
   }
 
@@ -51,7 +52,7 @@ class _ImagePickerState extends State<ImagePicker> {
                         image = false;
                         audio = false;
                         video = false;
-                        
+
                         file = true;
                       });
                     },
