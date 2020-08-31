@@ -26,16 +26,10 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-          child: Scaffold(
-          appBar: PreferredSize(
-      preferredSize: Size.fromHeight(75),
-      child: Theme(
-        data: Theme.of(context).copyWith(canvasColor: Colors.transparent),
-        child: SizedBox(height: 20)
-      ),
-          ),
-          body: PageView(
+    return Scaffold(
+      appBar: PreferredSize(
+            preferredSize: Size.fromHeight(75), child: SizedBox(height: 20)),
+      body: PageView(
         physics: NeverScrollableScrollPhysics(),
         controller: _pageController,
         onPageChanged: onPageChanged,
@@ -47,54 +41,53 @@ class _MainScreenState extends State<MainScreen> {
           UserProfile()
         ],
       ),
-          bottomNavigationBar: Theme(
-      data: Theme.of(context).copyWith(
-        // sets the background color of the `BottomNavigationBar`
-        canvasColor: Colors.black,
-        // sets the active color of the `BottomNavigationBar` if `Brightness` is light
-        primaryColor: Theme.of(context).accentColor,
-        textTheme: Theme.of(context).textTheme.copyWith(
-              caption: TextStyle(color: Colors.grey[500]),
-            ),
-      ),
-      child: BottomNavigationBar(
-        elevation: 4.0,
-        type: BottomNavigationBarType.fixed,
-        items: <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.message,
-            ),
-            title: Container(height: 0.0),
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.group,
-            ),
-            title: Container(height: 0.0),
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.home,
-            ),
-            title: Container(height: 0.0),
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            title: Container(height: 0.0),
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.person,
-            ),
-            title: Container(height: 0.0),
-          ),
-        ],
-        onTap: navigationTapped,
-        currentIndex: _page,
-      ),
-          ),
+      bottomNavigationBar: Theme(
+        data: Theme.of(context).copyWith(
+          // sets the background color of the `BottomNavigationBar`
+          canvasColor: Theme.of(context).canvasColor,
+          // sets the active color of the `BottomNavigationBar` if `Brightness` is light
+          primaryColor: Theme.of(context).accentColor,
+          textTheme: Theme.of(context).textTheme.copyWith(
+                caption: TextStyle(color: Colors.grey[500]),
+              ),
         ),
+        child: BottomNavigationBar(
+          elevation: 4.0,
+          type: BottomNavigationBarType.fixed,
+          items: <BottomNavigationBarItem>[
+            BottomNavigationBarItem(
+              icon: Icon(
+                Icons.message,
+              ),
+              title: Container(height: 0.0),
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(
+                Icons.group,
+              ),
+              title: Container(height: 0.0),
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(
+                Icons.home,
+              ),
+              title: Container(height: 0.0),
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.notifications),
+              title: Container(height: 0.0),
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(
+                Icons.person,
+              ),
+              title: Container(height: 0.0),
+            ),
+          ],
+          onTap: navigationTapped,
+          currentIndex: _page,
+        ),
+      ),
     );
   }
 

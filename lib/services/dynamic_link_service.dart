@@ -42,10 +42,10 @@ class DynamicLinkService {
 
   Future<String> createFirstPostLink(String title) async {
     final DynamicLinkParameters parameters = DynamicLinkParameters(
-      uriPrefix: 'https://filledstacks.page.link',
+      uriPrefix: 'https://coursemate.page.link',
       link: Uri.parse('https://www.CourseMate.com/post?title=$title'),
       androidParameters: AndroidParameters(
-        packageName: 'com.filledstacks.CourseMate',
+        packageName: 'com.space.CourseMate',
       ),
 
 

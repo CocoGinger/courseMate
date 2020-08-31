@@ -1,9 +1,11 @@
 
 import 'package:CourseMate/components/styles.dart';
 import 'package:CourseMate/utils/bubble_painter.dart';
+import 'package:CourseMate/viewmodels/login_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:stacked/stacked.dart';
 
 class LoginPage extends StatefulWidget {
   LoginPage({Key key}) : super(key: key);
@@ -43,7 +45,9 @@ class _LoginPageState extends State<LoginPage>
 
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
+    return ViewModelBuilder<LoginViewModel>.reactive(
+      viewModelBuilder: () => LoginViewModel(),
+      builder: (context, model, child) =>Scaffold(
       key: _scaffoldKey,
       body: NotificationListener<OverscrollIndicatorNotification>(
         // ignore: missing_return
@@ -102,11 +106,11 @@ class _LoginPageState extends State<LoginPage>
                     children: <Widget>[
                       new ConstrainedBox(
                         constraints: const BoxConstraints.expand(),
-                        child: _buildSignIn(context),
+                        child: _buildSignIn(context, model),
                       ),
                       new ConstrainedBox(
                         constraints: const BoxConstraints.expand(),
-                        child: _buildSignUp(context),
+                        child: _buildSignUp(context, model),
                       ),
                     ],
                   ),
@@ -116,7 +120,7 @@ class _LoginPageState extends State<LoginPage>
           ),
         ),
       ),
-    );
+    ));
   }
 
   @override
@@ -201,7 +205,7 @@ class _LoginPageState extends State<LoginPage>
     );
   }
 
-  Widget _buildSignIn(BuildContext context) {
+  Widget _buildSignIn(BuildContext context, model) {
     return Container(
       padding: EdgeInsets.only(top: 23.0),
       child: Column(
@@ -330,7 +334,12 @@ class _LoginPageState extends State<LoginPage>
                       ),
                     ),
                     onPressed: () {
-                    
+                    loginEmailController.text.isNotEmpty && loginPasswordController.text.isNotEmpty ?
+                     model.login(
+                          email: loginEmailController.text,
+                          password: loginPasswordController.text,
+                        ):print("something is missing");
+
                     }),
               ),
             ],
@@ -440,7 +449,7 @@ class _LoginPageState extends State<LoginPage>
     );
   }
 
-  Widget _buildSignUp(BuildContext context) {
+  Widget _buildSignUp(BuildContext context, model) {
     return Container(
       padding: EdgeInsets.only(top: 23.0),
       child: Column(
@@ -633,7 +642,12 @@ class _LoginPageState extends State<LoginPage>
                       ),
                     ),
                     onPressed: () {
-                   
+                    signupEmailController.text.isNotEmpty && signupPasswordController.text.isNotEmpty?
+                    model.signUp(
+                      email: signupEmailController.text,
+                      password: signupPasswordController.text,
+                      fullName: signupNameController.text
+                    ):print("something is missing");
                     }),
               ),
             ],

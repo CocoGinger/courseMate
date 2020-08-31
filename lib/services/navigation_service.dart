@@ -13,4 +13,10 @@ class NavigationService {
     return _navigationKey.currentState
         .pushNamed(routeName, arguments: arguments);
   }
+
+  Future<dynamic> navigateHome(String routeName, {dynamic arguments}) {
+    return _navigationKey.currentState.pushNamedAndRemoveUntil(
+        routeName, (route) => false,
+        arguments: arguments);
+  }
 }

@@ -31,7 +31,7 @@ class LoginViewModel extends BaseModel {
     if (result is bool) {
       if (result) {
         await _analyticsService.logLogin();
-        _navigationService.navigateTo(HomeViewRoute);
+        _navigationService.navigateHome(HomeViewRoute);
       } else {
         await _dialogService.showDialog(
           title: 'Login Failure',
@@ -45,8 +45,37 @@ class LoginViewModel extends BaseModel {
       );
     }
   }
+  
+  Future signUp({
+    @required String email,
+    @required String password,
+    @required String fullName,
+  }) async {
+    setBusy(true);
 
-  void navigateToSignUp() {
-    _navigationService.navigateTo(SignUpViewRoute);
+    var result = await _authenticationService.signUpWithEmail(
+        email: email,
+        password: password,
+        fullName: fullName
+       );
+
+    setBusy(false);
+
+    if (result is bool) {
+      if (result) {
+        await _analyticsService.logSignUp();
+        _navigationService.navigateHome(HomeViewRoute);
+      } else {
+        await _dialogService.showDialog(
+          title: 'Sign Up Failure',
+          description: 'General sign up failure. Please try again later',
+        );
+      }
+    } else {
+      await _dialogService.showDialog(
+        title: 'Sign Up Failure',
+        description: result,
+      );
+    }
   }
 }
